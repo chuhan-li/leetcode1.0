@@ -1,0 +1,92 @@
+/***
+Given a list of unique words, return all the pairs of the distinct indices (i, j) in the given list, so that the concatenation of the two words words[i] + words[j] is a palindrome.
+
+ 
+Example 1:
+
+Input: words = ["abcd","dcba","lls","s","sssll"]
+Output: [[0,1],[1,0],[3,2],[2,4]]
+Explanation: The palindromes are ["dcbaabcd","abcddcba","slls","llssssll"]
+Example 2:
+
+Input: words = ["bat","tab","cat"]
+Output: [[0,1],[1,0]]
+Explanation: The palindromes are ["battab","tabbat"]
+Example 3:
+
+Input: words = ["a",""]
+Output: [[0,1],[1,0]]
+ 
+
+Constraints:
+
+1 <= words.length <= 5000
+0 <= words[i].length <= 300
+words[i] consists of lower-case English letters.
+***/
+
+class Solution {
+    
+    class TrieNode {
+        TrieNode[] children;
+        int idx;
+        List<Integer> list; // list of palindrome pair
+        
+        public TrieNode() {
+            children = new TrieNode[26];
+            idx = -1; // -1 by default if this node is node the end of a word
+            list = new ArrayList<>();
+        }
+    }
+    
+    public TrieNode root;
+    
+    public List<List<Integer>> palindromePairs(String[] words) {
+        List<List<Integer>> res = new ArrayList<>();
+        root = new TrieNode();
+        
+        for (int i = 0; i < words.length; i++) {
+            addWord(words[i], i);
+        }
+        
+        for (int i = 0; i < words.length; i++) {
+            searchWord(words[i], i, res);
+        }
+        return res;
+    }
+    
+    public void addWord(String word, int idx) {
+        TrieNode cur = root;
+        for (int i = word.length() - 1; i > -1; i--) {
+            if (cur.children[word.charAt(i) - 'a'] == null) {
+                cur.children[word.charAt(i) - 'a'] = new TrieNode();
+            }
+            if (isPalindrome(word, 0, i)) cur.list.add(idx); // words[idx] substring before i is palindrome
+            cur = cur.children[word.charAt(i) - 'a'];
+        }
+        cur.list.add(idx); 
+        cur.idx = idx;
+    }
+
+    
+    public void searchWord(String word, int idx, List<List<Integer>> res) {
+        TrieNode cur = root;
+        for (int i = 0 ; i < word.length(); i++) {
+            if (cur.idx > -1 && cur.idx != idx) {
+                if (isPalindrome(word, i, word.length() - 1)) res.add(Arrays.asList(idx, cur.idx));
+            }
+            if (cur.children[word.charAt(i) - 'a'] == null) return;
+            cur = cur.children[word.charAt(i) - 'a'];
+        }
+        for (int j : cur.list) {
+            if (idx != j) res.add(Arrays.asList(idx, j));
+        }
+    }
+    
+    public boolean isPalindrome(String word, int l, int r) {
+        while (l < r) {
+            if (word.charAt(l++) != word.charAt(r--)) return false;
+        }
+        return true;
+    }
+}
