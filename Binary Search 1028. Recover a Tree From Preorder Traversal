@@ -1,0 +1,84 @@
+/***
+We run a preorder depth-first search (DFS) on the root of a binary tree.
+
+At each node in this traversal, we output D dashes (where D is the depth of this node), then we output the value of this node.  If the depth of a node is D, the depth of its immediate child is D + 1.  The depth of the root node is 0.
+
+If a node has only one child, that child is guaranteed to be the left child.
+
+Given the output S of this traversal, recover the tree and return its root.
+
+ 
+
+Example 1:
+
+
+Input: S = "1-2--3--4-5--6--7"
+Output: [1,2,5,3,4,6,7]
+Example 2:
+
+
+Input: S = "1-2--3---4-5--6---7"
+Output: [1,2,5,3,null,6,null,4,null,7]
+Example 3:
+
+
+Input: S = "1-401--349---90--88"
+Output: [1,401,null,349,88,90]
+ 
+
+Constraints:
+
+The number of nodes in the original tree is in the range [1, 1000].
+1 <= Node.val <= 109
+***/
+
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+
+class Solution {
+  public TreeNode recoverFromPreorder(String S) {
+    Stack<TreeNode> st = new Stack<>();
+    int i = 0;
+    int level, curVal;
+    while (i < S.length()) {
+      level = 0;
+      while (S.charAt(i) == '-') {
+        level++;
+        i++;
+      }
+      curVal = 0;
+      while (i < S.length() && S.charAt(i) != '-') {
+        curVal = curVal * 10 + (S.charAt(i) - '0');
+        i++;
+      }
+      
+      while (st.size() > level) st.pop();
+      TreeNode curNode = new TreeNode(curVal);
+      if (!st.isEmpty()) {
+        if (st.peek().left != null) st.peek().right = curNode;
+        else st.peek().left = curNode;
+      }
+      st.push(curNode);
+    }
+    while (st.size() > 1) st.pop();
+    return st.pop();
+  }
+}
+
+// 解题思路分析
+
+// 基本思路是用一个堆栈，保存当前节点和level，如果新的level更高，那么就是压栈，如果遇到新的level比较低，那就需要退栈；
+// 每次遇到一个新的数的时候，如果做了退栈了，那么当前节点应该是父节点（就是堆栈的peek())的右子数,如果是没有退栈，那么当前节点就是父节点的左子树
